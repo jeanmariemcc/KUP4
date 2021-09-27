@@ -1,0 +1,1 @@
+Sammy("#container",(function(){this.use("Handlebars","hbs"),this.get("#/home",(function(n){n.loadPartials("./views/home.hbs",(function(n){console.log(n)}))})),this.get("#/signinForm",(function(n){}))})).run("#/home");
