@@ -1,9 +1,6 @@
-// global variables to store who is logged in  id
-let pageUserId = "";
-let pageUsername = "";
-let successbox = document.getElementById("successBox");
-let loadingbox = document.getElementById("loadingBox");
-let errorbox = document.getElementById("errorBox");
+let pageUserId = "-Msdft87654";
+let pageUsername = "user12";
+
 const app = Sammy("#container", function () {
 	this.use("Handlebars", "hbs");
 
@@ -23,12 +20,8 @@ const app = Sammy("#container", function () {
 	}
 	function eventshome(context) {
 		console.log(`pageUserId  ${pageUserId}  pageUsername  ${pageUsername}`);
-		// empty one
-		// let url = "https://unievents-1ff1a-default-rtdb.firebaseio.com/events.json";
-		// populated
-		let url =
-			"https://events-473a6-default-rtdb.firebaseio.com/events.json";
-		fetch(url)
+
+		fetch("https://events-473a6-default-rtdb.firebaseio.com/events.json")
 			.then(function (response) {
 				// console.log(response);
 				return response.json();
@@ -43,7 +36,7 @@ const app = Sammy("#container", function () {
 				});
 				context.events = eventsArray;
 				// console.log(eventsArray);
-				context.pageUsername = pageUsername;
+
 				context
 					.loadPartials({
 						headerIn: "./views/headerIn.hbs",
@@ -60,26 +53,16 @@ const app = Sammy("#container", function () {
 			})
 			.catch((err) => {
 				console.log(err);
-				context.pageUsername = pageUsername;
-				context
-					.loadPartials({
-						headerIn: "./views/headerIn.hbs",
-						footer: "./views/footer.hbs",
-					})
-					.then(function () {
-						this.partial(
-							"./views/four04.hbs",
-							function (details) {}
-						);
-					});
 			});
 	}
+
 	this.get("#/home", home);
 	this.get("#/allEvents", eventshome);
 	this.get("#/detailsEvent/:id", function (context) {
 		console.log(`pageUserId  ${pageUserId}  pageUsername  ${pageUsername}`);
 		context.id = this.params["id"];
 		let parmId = this.params["id"];
+		// let url = "'https://events-473a6-default-rtdb.firebaseio.com/events/" + parmId + ".json'";
 		fetch(
 			"https://events-473a6-default-rtdb.firebaseio.com/events/" +
 				parmId +
@@ -90,6 +73,17 @@ const app = Sammy("#container", function () {
 				return response.json();
 			})
 			.then(function (data) {
+				// console.log(data);
+				// let eventsArray = Object.entries(data);
+				// console.log(eventsArray);
+				// eventsArray = eventsArray.map(function(innerArray){
+				// 	let [eventID,eventObject] = innerArray;
+				// 	eventObject.id = eventID;
+				// 	return eventObject;
+				// });
+
+				// context.events = eventsArray;
+				// context.data=data;
 				context.dateTime = data.dateTime;
 				context.description = data.description;
 				context.imageURL = data.imageURL;
@@ -103,7 +97,6 @@ const app = Sammy("#container", function () {
 				} else {
 					partialView = "./views/detailsEvent.hbs";
 				}
-				context.pageUsername = pageUsername;
 				context
 					.loadPartials({
 						headerIn: "./views/headerIn.hbs",
@@ -121,6 +114,7 @@ const app = Sammy("#container", function () {
 	});
 
 	this.get("#/joinEvent/:id", function (context) {
+		console.log(`pageUserId  ${pageUserId}  pageUsername  ${pageUsername}`);
 		let parmId = this.params["id"];
 		fetch(
 			"https://events-473a6-default-rtdb.firebaseio.com/events/" +
@@ -182,12 +176,8 @@ const app = Sammy("#container", function () {
 				context.name = data.name;
 				context.organizer = data.organizer;
 				context.peopleInterestedIn = data.peopleInterestedIn;
-				context.id = parmId;
-
-				context.pageUsername = pageUsername;
-				console.log(
-					`data.dateTime ${data.dateTime} context.name ${context.name}`
-				);
+				// })
+				// .then(function(context){
 				context
 					.loadPartials({
 						headerIn: "./views/headerIn.hbs",
@@ -197,50 +187,44 @@ const app = Sammy("#container", function () {
 						this.partial(
 							"./views/editEvent.hbs",
 							function (details) {
-								// console.log(details);
+								console.log(details);
 							}
 						);
 					});
 			});
 	});
-	this.post("#/editEvent", function (context) {
-		console.log("line 207");
-		// let newdata = {
-		// 	dateTime: this.params.dateTime,
-		// 	description: this.params.editdescription,
-		// 	imageURL: this.params.imageURL,
-		// 	name: this.params.name,
-		// 	organizer: pageUsername,
-		// 	peopleInterestedIn: 0,
-		// };
-		// console.log(newdata);
-		// let parmId = this.params.inputId;
+	this.post("#/editEvent/:id", function (context) {
+		let data = {
+			dateTime: this.params.dateTime,
+			description: this.params.description,
+			imageURL: this.params.imageURL,
+			name: this.params.name,
+		};
+		let parmId = this.params["id"];
 
-		// let url =
-		// 	"https://events-473a6-default-rtdb.firebaseio.com/events/" +
-		// 	parmId +
-		// 	".json";
-		// console.log(url);
-		// let headers = {
-		// 	method: "post",
-		// 	headers: {
-		// 		"Content-Type": "application/json",
-		// 	},
-		// 	body: JSON.stringify(newdata),
-		// };
-		// console.log(headers);
-		// fetch(url, headers)
-		// 	.then(function (response) {
-		// 		if (response.status == 200) {
-		// 			console.log("edited!!");
-		// 			eventshome(context);
-		// 		} else {
-		// 			console.log(response.status);
-		// 		}
-		// 	})
-		// 	.catch((err) => {
-		// 		console.log(err);
-		// 	});
+		let url =
+			"https://events-473a6-default-rtdb.firebaseio.com/events/" +
+			parmId +
+			".json";
+		let headers = {
+			method: "PATCH",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(data),
+		};
+		fetch(url, headers)
+			.then(function (response) {
+				if (response.status == 200) {
+					console.log("created!!");
+					eventshome(context);
+				} else {
+					console.log(response.status);
+				}
+			})
+			.catch((err) => {
+				console.log(err);
+			});
 	});
 	this.get("#/closeEvent/:id", function (context) {
 		console.log(`pageUserId  ${pageUserId}  pageUsername  ${pageUsername}`);
@@ -269,6 +253,23 @@ const app = Sammy("#container", function () {
 
 	this.get("#/displayProfile", function (context) {
 		console.log(`pageUserId  ${pageUserId}  pageUsername  ${pageUsername}`);
+		// context.id = this.params["id"];
+		// let user = {
+		// loggedIn: "true",
+		// id:"-msftnpq",
+		// userid: "user1",
+		// password: "passwd1",
+		// imageURL: "./images/user.png",
+		// orgOf: [{
+		// 	id:"-MSfgjtjek",
+		// 	name:"Birthday Party"
+		// },
+		// {
+		// id:"-mklsdjfdkj2",
+		// name:"Graduation Party",
+		// }
+		// ],
+		// 	};
 		let parmId = pageUserId;
 		console.log(`params id ${parmId}`);
 		fetch(
@@ -281,13 +282,17 @@ const app = Sammy("#container", function () {
 				return response.json();
 			})
 			.then(function (data) {
+				// console.log(data);
+				// let orgArray = user.orgOf;
+				// if(user.orgOf.length>0){
+				// 	context.orgnumber = user.orgOf.length;
+				// } else
 				context.orgnumber = 0;
 				// context.id = data.id;
 				context.userid = data.userid;
 				context.imageURL = "./images/user.png";
 				// context.password = user.password;
 				// need to put in logic to see if user is an organizer
-				context.pageUsername = pageUsername;
 				context
 					.loadPartials({
 						headerIn: "./views/headerIn.hbs",
@@ -318,21 +323,16 @@ const app = Sammy("#container", function () {
 					// console.log(details);
 				});
 			});
-		// console.log("login route");
-		// console.log("line 300");
+		console.log("login route");
 	});
-
 	this.post("#/signinForm", function (context) {
 		//pulls in the login post information
 		//then validates if the user can log in or not
 		//if successful redirect to the profile page
 		let username = this.params.username;
 		let password = this.params.password;
-		// empty one
-		// let url = "https://unievents-1ff1a-default-rtdb.firebaseio.com/users.json";
-		// populated
-		let url = "https://events-473a6-default-rtdb.firebaseio.com/users.json";
-		fetch(url)
+
+		fetch("https://events-473a6-default-rtdb.firebaseio.com/users.json")
 			.then((response) => {
 				return response.json();
 			})
@@ -379,7 +379,6 @@ const app = Sammy("#container", function () {
 	});
 
 	this.get("#/orgEvent", function (context) {
-		context.pageUsername = pageUsername;
 		context
 			.loadPartials({
 				headerIn: "./views/headerIn.hbs",
@@ -392,7 +391,7 @@ const app = Sammy("#container", function () {
 			});
 	});
 	this.post("#/orgEvent", function (context) {
-		console.log("org form submitted");
+		// console.log('org form submitted');
 		// console.log(this.params);
 		let data = {
 			dateTime: this.params.dateTime,
@@ -415,7 +414,7 @@ const app = Sammy("#container", function () {
 		fetch(url, headers)
 			.then(function (response) {
 				if (response.status == 200) {
-					console.log("created !!");
+					console.log("created!!");
 					eventshome(context);
 				} else {
 					console.log(response.status);
