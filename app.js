@@ -77,7 +77,7 @@ const app = Sammy("#container", function () {
 	this.get("#/home", home);
 	this.get("#/allEvents", eventshome);
 	this.get("#/detailsEvent/:id", function (context) {
-		console.log(`pageUserId  ${pageUserId}  pageUsername  ${pageUsername}`);
+		// console.log(`pageUserId  ${pageUserId}  pageUsername  ${pageUsername}`);
 		context.id = this.params["id"];
 		let parmId = this.params["id"];
 		fetch(
@@ -185,9 +185,9 @@ const app = Sammy("#container", function () {
 				context.id = parmId;
 
 				context.pageUsername = pageUsername;
-				console.log(
-					`data.dateTime ${data.dateTime} context.name ${context.name}`
-				);
+				// console.log(
+				// 	`data.dateTime ${data.dateTime} context.name ${context.name}`
+				// );
 				context
 					.loadPartials({
 						headerIn: "./views/headerIn.hbs",
@@ -203,44 +203,44 @@ const app = Sammy("#container", function () {
 					});
 			});
 	});
-	this.post("#/editEvent", function (context) {
+	this.post("#/editEvent/:id", function (context) {
 		console.log("line 207");
-		// let newdata = {
-		// 	dateTime: this.params.dateTime,
-		// 	description: this.params.editdescription,
-		// 	imageURL: this.params.imageURL,
-		// 	name: this.params.name,
-		// 	organizer: pageUsername,
-		// 	peopleInterestedIn: 0,
-		// };
-		// console.log(newdata);
-		// let parmId = this.params.inputId;
+		let newdata = {
+			dateTime: this.params.dateTime,
+			description: this.params.description,
+			imageURL: this.params.imageURL,
+			name: this.params.name,
+			organizer: pageUsername,
+			peopleInterestedIn: this.params.peopleInterestedIn,
+		};
+		console.log(newdata);
+		let parmId = this.params.inputId;
 
-		// let url =
-		// 	"https://events-473a6-default-rtdb.firebaseio.com/events/" +
-		// 	parmId +
-		// 	".json";
-		// console.log(url);
-		// let headers = {
-		// 	method: "post",
-		// 	headers: {
-		// 		"Content-Type": "application/json",
-		// 	},
-		// 	body: JSON.stringify(newdata),
-		// };
-		// console.log(headers);
-		// fetch(url, headers)
-		// 	.then(function (response) {
-		// 		if (response.status == 200) {
-		// 			console.log("edited!!");
-		// 			eventshome(context);
-		// 		} else {
-		// 			console.log(response.status);
-		// 		}
-		// 	})
-		// 	.catch((err) => {
-		// 		console.log(err);
-		// 	});
+		let url =
+			"https://events-473a6-default-rtdb.firebaseio.com/events/" +
+			parmId +
+			".json";
+		console.log(url);
+		let headers = {
+			method: "put",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(newdata),
+		};
+		console.log(headers);
+		fetch(url, headers)
+			.then(function (response) {
+				if (response.status == 200) {
+					console.log("edited!!");
+					eventshome(context);
+				} else {
+					console.log(response.status);
+				}
+			})
+			.catch((err) => {
+				console.log(err);
+			});
 	});
 	this.get("#/closeEvent/:id", function (context) {
 		console.log(`pageUserId  ${pageUserId}  pageUsername  ${pageUsername}`);

@@ -26,13 +26,17 @@
         autofocus="" value="{{imageURL}}">
       <label  for="imageURL">Image</label>
     </div>
-      <div class="form-label-group">
-      <input type="text" id="inputID" name="inputId" class="form-control" placeholder="Date" required="" value="{{id}}">
+      <div style="display: none"  class="form-label-group">
+      <input  type="text" id="inputID" name="inputId" class="form-control" placeholder="ID" required="" value="{{id}}">
       <label for="inputID">ID</label>
+    </div>
+     <div style="display: none"  class="form-label-group">
+      <input  type="text" id="peopleInterestedIn" name="peopleInterestedIn" class="form-control" placeholder="ID" required="" value="{{peopleInterestedIn}}">
+      <label for="peopleInterestedIn">Interest</label>
     </div>
 <div>
     <button class="btn btn-lg btn-dark btn-block" type="submit">Edit it</button>
-      {{!-- <a href="#/editEvent/{{id}}" class="btn btn-dark btn-block btn-lg">Edit the event</a> --}}
+      {{!-- <a href="#/editEvent/{{id}}" class="btn btn-dark btn-block btn-lg" type="submit">Edit the event</a> --}}
 
 </div>
     <p class="mt-5 mb-3 text-muted text-center">© UniEnt - 2021.</p>

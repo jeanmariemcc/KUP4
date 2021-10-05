@@ -7,4 +7,4 @@ npx webpack-dev-server --open
 userid: jm1  password: jm1
 userid: jm2 password: jm2
 using firebase  - 
-Still working on edit, profile and notifications
+Still working on profile and notifications
