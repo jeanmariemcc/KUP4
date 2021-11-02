@@ -13,5 +13,10 @@
         "webpack": "^4.39.1",
         "webpack-cli": "^3.3.6",
         "webpack-dev-server": "^3.8.0"
+    },
+    "scripts": {
+        "start": "npx webpack-dev-server --open",
+        "build": "npx webpack",
+        "watch": "npx webpack --watch"
     }
 }

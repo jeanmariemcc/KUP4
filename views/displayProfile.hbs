@@ -3,9 +3,14 @@
       <img class="profile-img" src={{imageURL}} />
       <div class="profile-info">
         <p>Username: <small>{{userid}}</small></p>
-        {{!-- <p class="infoType">Organizer of {{orgnumber}} events.</p> --}}
-        
+      {{#if count}}  
+        <p class="infoType">Organizer of {{count}} events.</p>
+        {{#each events}}
+        <p class= "infoType">{{name}}</p>
+        {{/each}}
+      {{else}}  
         <p>No events</p>
+       {{/if}} 
       </div>
     </div>
 {{> footer}} 

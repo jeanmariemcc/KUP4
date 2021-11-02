@@ -9,7 +9,7 @@ const app = Sammy("#container", function () {
 
 	// Home
 	function home(context) {
-		console.log(`pageUserId  ${pageUserId}  pageUsername  ${pageUsername}`);
+		// console.log(`pageUserId  ${pageUserId}  pageUsername  ${pageUsername}`);
 		context
 			.loadPartials({
 				headerOut: "./views/headerOut.hbs",
@@ -22,12 +22,17 @@ const app = Sammy("#container", function () {
 			});
 	}
 	function eventshome(context) {
-		console.log(`pageUserId  ${pageUserId}  pageUsername  ${pageUsername}`);
 		// empty one
 		// let url = "https://unievents-1ff1a-default-rtdb.firebaseio.com/events.json";
 		// populated
 		let url =
 			"https://events-473a6-default-rtdb.firebaseio.com/events.json";
+		$.notify("Loading... ", {
+			className: "info",
+			// clickToHide: true,
+			delay: 500,
+			autoHide: true,
+		});
 		fetch(url)
 			.then(function (response) {
 				// console.log(response);
@@ -57,6 +62,7 @@ const app = Sammy("#container", function () {
 							}
 						);
 					});
+				// $("info").toggle("notify-hide");
 			})
 			.catch((err) => {
 				console.log(err);
@@ -80,6 +86,7 @@ const app = Sammy("#container", function () {
 		// console.log(`pageUserId  ${pageUserId}  pageUsername  ${pageUsername}`);
 		context.id = this.params["id"];
 		let parmId = this.params["id"];
+		$.notify("Loading", "info");
 		fetch(
 			"https://events-473a6-default-rtdb.firebaseio.com/events/" +
 				parmId +
@@ -122,6 +129,7 @@ const app = Sammy("#container", function () {
 
 	this.get("#/joinEvent/:id", function (context) {
 		let parmId = this.params["id"];
+		$.notify("Loading", "info");
 		fetch(
 			"https://events-473a6-default-rtdb.firebaseio.com/events/" +
 				parmId +
@@ -153,6 +161,10 @@ const app = Sammy("#container", function () {
 					.then(function (response) {
 						if (response.status == 200) {
 							console.log("patched!!");
+							$.notify(
+								"You've joined the event successfully",
+								"success"
+							);
 							eventshome(context);
 						} else {
 							console.log(response.status);
@@ -166,6 +178,7 @@ const app = Sammy("#container", function () {
 
 	this.get("#/editEvent/:id", function (context) {
 		let parmId = this.params["id"];
+		$.notify("Loading", "info");
 		fetch(
 			"https://events-473a6-default-rtdb.firebaseio.com/events/" +
 				parmId +
@@ -204,7 +217,46 @@ const app = Sammy("#container", function () {
 			});
 	});
 	this.post("#/editEvent/:id", function (context) {
-		console.log("line 207");
+		// console.log("line 207");
+
+		// if (typeof this.params.dateTime != "string") {
+		// 	$.notify(
+		// 		"Date and time must be a string e.g Feb 24, 2022 or 24 Mar - 10pm",
+		// 		"error"
+		// 	);
+		// 	return false;
+		// }
+		if (
+			typeof this.params.description != "string" ||
+			this.params.description.length < 10
+		) {
+			$.notify(
+				"The description must be a string of at least 10 characters",
+				{ className: "error", clickToHide: true, autoHide: false }
+			);
+			return false;
+		}
+		if (
+			typeof this.params.name != "string" ||
+			this.params.name.length < 6
+		) {
+			$.notify(
+				"The event name must be a string of at least 6 characters",
+				{ className: "error", clickToHide: true, autoHide: false }
+			);
+			return false;
+		}
+		let urlregex =
+			/(^http)s?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}/g;
+		if (!urlregex.exec(this.params.imageURL)) {
+			$.notify("Enter a valid URL starting with http:// or https://", {
+				className: "error",
+				clickToHide: true,
+				autoHide: false,
+			});
+			return false;
+		}
+		$.notify("Loading", "info");
 		let newdata = {
 			dateTime: this.params.dateTime,
 			description: this.params.description,
@@ -228,11 +280,13 @@ const app = Sammy("#container", function () {
 			},
 			body: JSON.stringify(newdata),
 		};
-		console.log(headers);
+		// console.log(headers);
 		fetch(url, headers)
 			.then(function (response) {
 				if (response.status == 200) {
-					console.log("edited!!");
+					// console.log("edited!!");
+					$.notify("Event edited successfully", "success");
+
 					eventshome(context);
 				} else {
 					console.log(response.status);
@@ -243,7 +297,6 @@ const app = Sammy("#container", function () {
 			});
 	});
 	this.get("#/closeEvent/:id", function (context) {
-		console.log(`pageUserId  ${pageUserId}  pageUsername  ${pageUsername}`);
 		let parmId = this.params["id"];
 
 		let url =
@@ -256,7 +309,8 @@ const app = Sammy("#container", function () {
 		fetch(url, headers)
 			.then(function (response) {
 				if (response.status == 200) {
-					console.log("deleted!!");
+					// console.log("deleted!!");
+					$.notify("Event closed successfully", "success");
 					eventshome(context);
 				} else {
 					console.log(response.status);
@@ -268,26 +322,32 @@ const app = Sammy("#container", function () {
 	});
 
 	this.get("#/displayProfile", function (context) {
-		console.log(`pageUserId  ${pageUserId}  pageUsername  ${pageUsername}`);
-		let parmId = pageUserId;
-		console.log(`params id ${parmId}`);
-		fetch(
-			"https://events-473a6-default-rtdb.firebaseio.com/users/" +
-				parmId +
-				".json"
-		)
+		context.pageUsername = pageUsername;
+		context.imageURL = "./images/user.png";
+		context.userid = pageUsername;
+
+		// got the user id from the global variable, now get events data and loop through for the events organized by this user
+		let url =
+			"https://events-473a6-default-rtdb.firebaseio.com/events.json";
+		fetch(url)
 			.then(function (response) {
-				console.log(response);
 				return response.json();
 			})
 			.then(function (data) {
-				context.orgnumber = 0;
-				// context.id = data.id;
-				context.userid = data.userid;
-				context.imageURL = "./images/user.png";
-				// context.password = user.password;
-				// need to put in logic to see if user is an organizer
-				context.pageUsername = pageUsername;
+				// let myEvents = [];
+				let eventsArray = Object.entries(data);
+				eventsArray = eventsArray.map(function (innerArray) {
+					let [eventID, eventObj] = innerArray;
+					eventObj.id = eventID;
+					return eventObj;
+				});
+				let myEvents = eventsArray.filter(
+					(element) => element.organizer == pageUsername
+				);
+				context.events = myEvents;
+				context.count = myEvents.length;
+				context.name = myEvents.name;
+
 				context
 					.loadPartials({
 						headerIn: "./views/headerIn.hbs",
@@ -297,12 +357,13 @@ const app = Sammy("#container", function () {
 						this.partial(
 							"./views/displayProfile.hbs",
 							function (details) {
-								// console.log(id);
+								// console.log(details);
 							}
 						);
 					});
 			})
 			.catch((err) => {
+				// catch err on fetch to events data
 				console.log(err);
 			});
 	});
@@ -325,11 +386,12 @@ const app = Sammy("#container", function () {
 	this.post("#/signinForm", function (context) {
 		//pulls in the login post information
 		//then validates if the user can log in or not
-		//if successful redirect to the profile page
+		//if successful redirect to the allEvents page
 		let username = this.params.username;
 		let password = this.params.password;
 		// empty one
-		// let url = "https://unievents-1ff1a-default-rtdb.firebaseio.com/users.json";
+		// let url =
+		// "https://unievents-1ff1a-default-rtdb.firebaseio.com/users.json";
 		// populated
 		let url = "https://events-473a6-default-rtdb.firebaseio.com/users.json";
 		fetch(url)
@@ -357,17 +419,30 @@ const app = Sammy("#container", function () {
 						//logged In!!!!
 						pageUserId = hasUser[0];
 						pageUsername = hasUser[1].userid;
-						console.log(
-							`pageUserId  ${pageUserId}  pageUsername  ${pageUsername}`
-						);
+						// console.log(
+						// 	`pageUserId  ${pageUserId}  pageUsername  ${pageUsername}`
+						// );
+						$.notify("Login successful.", "success");
 						context.redirect("#/allEvents");
 					} else {
+						$.notify("Password is invalid", {
+							className: "error",
+							clickToHide: true,
+							autoHide: false,
+						});
+
 						document
 							.getElementById("inputPassword")
 							.classList.add("is-invalid");
+						return false;
 					}
 				} else {
 					//send error to the front end
+					$.notify("Username is invalid", {
+						className: "error",
+						clickToHide: true,
+						autoHide: false,
+					});
 					document
 						.getElementById("inputUsername")
 						.classList.add("is-invalid");
@@ -392,8 +467,45 @@ const app = Sammy("#container", function () {
 			});
 	});
 	this.post("#/orgEvent", function (context) {
-		console.log("org form submitted");
-		// console.log(this.params);
+		// console.log("org form submitted");
+		if (typeof this.params.dateTime != "string") {
+			$.notify(
+				"Date and time must be a string e.g Feb 24, 2022 or 24 Mar - 10pm",
+				{ className: "error", clickToHide: true, autoHide: false }
+			);
+			return false;
+		}
+		if (
+			typeof this.params.description != "string" ||
+			this.params.description.length < 10
+		) {
+			$.notify(
+				"The description must be a string of at least 10 characters",
+				{ className: "error", clickToHide: true, autoHide: false }
+			);
+			return false;
+		}
+		if (
+			typeof this.params.name != "string" ||
+			this.params.name.length < 6
+		) {
+			$.notify(
+				"The event name must be a string of at least 6 characters",
+				"error"
+			);
+			return false;
+		}
+		let urlregex =
+			/(^http)s?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}/g;
+		if (!urlregex.exec(this.params.imageURL)) {
+			$.notify("Enter a valid URL starting with http:// or https://", {
+				className: "error",
+				clickToHide: true,
+				autoHide: false,
+			});
+			return false;
+		}
+
 		let data = {
 			dateTime: this.params.dateTime,
 			description: this.params.description,
@@ -402,7 +514,6 @@ const app = Sammy("#container", function () {
 			peopleInterestedIn: 0,
 			organizer: pageUsername,
 		};
-
 		let url =
 			"https://events-473a6-default-rtdb.firebaseio.com/events.json";
 		let headers = {
@@ -415,6 +526,7 @@ const app = Sammy("#container", function () {
 		fetch(url, headers)
 			.then(function (response) {
 				if (response.status == 200) {
+					$.notify("Event created successfully", "success");
 					console.log("created !!");
 					eventshome(context);
 				} else {
@@ -441,45 +553,163 @@ const app = Sammy("#container", function () {
 	this.post("#/registerForm", function (context) {
 		// console.log('org form submitted');
 		// console.log(this.params);
+		if (
+			!this.params.userid ||
+			!this.params.password ||
+			!this.params.rePassword
+		) {
+			$.notify("Kindly fill out the complete form", {
+				className: "error",
+				clickToHide: true,
+				autoHide: false,
+			});
+
+			return false;
+		}
 		let userFace = this.params.imageURL;
-		if (this.params.password == this.params.rePassword) {
-			if (userFace == "") {
-				userFace = "./images/user.png";
-			}
-			let data = {
-				loggedin: "true",
-				userid: this.params.userid,
-				imageURL: userFace,
-				password: this.params.password,
-			};
+		if (this.params.password != this.params.rePassword) {
+			$.notify("Passwords do not match", {
+				className: "error",
+				clickToHide: true,
+				autoHide: false,
+			});
+			return false;
+		}
+		// test for valid user name
+		const idregex = /([a-z,A-Z,0-9,_]{3,24}$)/g;
+		if (!idregex.exec(this.params.userid)) {
+			$.notify(
+				"User names must contain letters, numbers and _, and be 3-24 characters in length",
+				{ className: "error", clickToHide: true, autoHide: false }
+			);
 
-			let url =
-				"https://events-473a6-default-rtdb.firebaseio.com/users.json";
-			let headers = {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(data),
-			};
-			fetch(url, headers)
-				.then(function (response) {
-					if (response.status == 200) {
-						console.log("user created!!");
+			return false;
+		}
+		const passregex = /([a-z,A-Z,0-9,_]{6,24}$)/g;
+		if (!passregex.exec(this.params.password)) {
+			$.notify(
+				"Passwords must contain letters, numbers and _, and be 6-24 characters in length",
+				{ className: "error", clickToHide: true, autoHide: false }
+			);
 
-						eventshome(context);
-					} else {
-						console.log(response.status);
-					}
-				})
-				.catch((err) => {
-					console.log(err);
+			return false;
+		}
+		if (userFace == "") {
+			userFace = "./images/user.png";
+		}
+		let username = this.params.userid;
+		// check unique
+		let url = "https://events-473a6-default-rtdb.firebaseio.com/users.json";
+		fetch(url)
+			.then((response) => {
+				return response.json();
+			})
+			.then((users) => {
+				let userArray = Object.entries(users);
+				console.log(userArray);
+				let unique = "";
+				let hasUser = userArray.find((user) => {
+					let [userID, userObj] = user;
+					console.log(`user id key ${userID}`);
+					console.log(`userObj ${userObj}`);
+					console.log(`user ${user}`);
+
+					return userObj.userid == username;
 				});
-		} // end of matching passwords if
+
+				console.log(`hasUser ${hasUser}`);
+				// console.log(`hasUser[1].userid ${hasUser[1].userid}`);
+				if (
+					hasUser === undefined ||
+					hasUser[1].userid != this.params.userid
+				) {
+					let data = {
+						loggedin: "true",
+						userid: this.params.userid,
+						imageURL: userFace,
+						password: this.params.password,
+					};
+
+					url =
+						"https://events-473a6-default-rtdb.firebaseio.com/users.json";
+					let headers = {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify(data),
+					};
+					fetch(url, headers)
+						.then(function (response) {
+							if (response.status == 200) {
+								console.log("user created!!");
+								$.notify(
+									"User registration successful!",
+									"success"
+								);
+								// eventshome(context);
+								context.redirect("#/signinForm");
+
+								// #/signinForm;
+							} else {
+								console.log(response.status);
+							}
+						})
+						.catch((err) => {
+							console.log(err);
+						});
+					// end of matching passwords if
+				} else {
+					$.notify("Userid already exists, please choose another", {
+						className: "error",
+						clickToHide: true,
+						autoHide: false,
+					});
+					return false;
+				}
+			})
+			.catch((err) => {
+				console.log(err);
+			});
+
+		// end unique
+		// let data = {
+		// 	loggedin: "true",
+		// 	userid: this.params.userid,
+		// 	imageURL: userFace,
+		// 	password: this.params.password,
+		// };
+
+		// url = "https://events-473a6-default-rtdb.firebaseio.com/users.json";
+		// let headers = {
+		// 	method: "POST",
+		// 	headers: {
+		// 		"Content-Type": "application/json",
+		// 	},
+		// 	body: JSON.stringify(data),
+		// };
+		// fetch(url, headers)
+		// 	.then(function (response) {
+		// 		if (response.status == 200) {
+		// 			console.log("user created!!");
+		// 			$.notify("User registration successful!", "success");
+		// 			// eventshome(context);
+		// 			context.redirect("#/signinForm");
+
+		// 			// #/signinForm;
+		// 		} else {
+		// 			console.log(response.status);
+		// 		}
+		// 	})
+		// 	.catch((err) => {
+		// 		console.log(err);
+		// 	});
+		// end of matching passwords if
 	});
 	this.get("#/logout", function (context) {
 		pageUserId = "";
 		pageUsername = "";
+		$.notify("Logout successful", "success");
 		home(context);
 	});
 });
